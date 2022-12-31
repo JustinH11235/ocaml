@@ -114,7 +114,7 @@ type t =
    do NOT reuse one of the holes.
 *)
 
-type alert = {kind:string; message:string; def:loc; use:loc}
+type alert = {kind:string; message:Format.formatter -> unit; def:loc; use:loc}
 
 let number = function
   | Comment_start -> 1
@@ -691,6 +691,8 @@ let ghost_loc_in_file name =
   { loc_start = pos; loc_end = pos; loc_ghost = true }
 
 let letter_alert tokens =
+  Misc.Color.setup None; 
+  (* Location.setup_colors (); *)
   let print_warning_char ppf c =
     let lowercase = Char.lowercase_ascii c = c in
     Format.fprintf ppf "%c%c"
@@ -736,23 +738,24 @@ let letter_alert tokens =
         in
         if max_seq_len >= 5 then
           Format.fprintf ppf
-            "@ @[Hint: Did you make a spelling mistake \
+            "@ @[@{<hint>Hint@}: JUSTINDid you make a spelling mistake \
              when using a mnemonic name?@]"
         else
           ()
       in
       let message =
-        Format.asprintf
+        Format.dprintf
           "@[<v>@[Setting a warning with a sequence of lowercase \
            or uppercase letters,@ like '%a',@ is deprecated.@]@ \
            @[Use the equivalent signed form:@ %t.@]@ \
-           @[Hint: Enabling or disabling a warning by its mnemonic name \
+           @[@{<hint>Hint@}: JUSTIN2Enabling or disabling a warning by its mnemonic name \
            requires a + or - prefix.@]\
            %t@?@]"
           Format.(pp_print_list ~pp_sep:(fun _ -> ignore) pp_print_char) example
           (fun ppf -> List.iter (print_token ppf) tokens)
           spelling_hint
       in
+      (* Format.printf "MESSAGE: %s" message; *)
       Some {
         kind="ocaml_deprecated_cli";
         use=nowhere; def=nowhere;
@@ -872,7 +875,7 @@ let ref_manual_explanation () =
 let message = function
   | Comment_start ->
       "this `(*' is the start of a comment.\n\
-       Hint: Did you forget spaces when writing the infix operator `( * )'?"
+      @{<hint>Hint@}: JUSTIN3Did you forget spaces when writing the infix operator `( * )'?"
   | Comment_not_end -> "this is not the end of a comment."
   | Fragile_match "" ->
       "this pattern-matching is fragile."
@@ -1071,7 +1074,7 @@ let message = function
          and its interface was not compiled with -opaque" name
   | Flambda_assignment_to_non_mutable_value ->
       "A potential assignment to a non-mutable value was detected \n\
-        in this source file.  Such assignments may generate incorrect code \n\
+        in this source file. Such assignments may generate incorrect code \n\
         when using Flambda."
   | Unused_module s -> "unused module " ^ s ^ "."
   | Unboxable_type_in_prim_decl t ->
@@ -1099,7 +1102,7 @@ let message = function
       Printf.sprintf
         "This type declaration is defining a new '()' constructor\n\
          which shadows the existing one.\n\
-         Hint: Did you mean 'type %s = unit'?" name
+         @{<hint>Hint@}: JUSTIN2Did you mean 'type %s = unit'?" name
   | Unused_functor_parameter s -> "unused functor parameter " ^ s ^ "."
   | Match_on_mutable_state_prevent_uncurry ->
     "This pattern depends on mutable state.\n\
@@ -1120,7 +1123,7 @@ let message = function
        but is never applied in TMC position."
   | Tmc_breaks_tailcall ->
       "This call\n\
-       is in tail-modulo-cons positionin a TMC function,\n\
+       is in tail-modulo-cons position in a TMC function,\n\
        but the function called is not itself specialized for TMC,\n\
        so the call will not be transformed into a tail call.\n\
        Please either mark the called function with the [@tail_mod_cons]\n\
@@ -1132,7 +1135,7 @@ let nerrors = ref 0
 
 type reporting_information =
   { id : string
-  ; message : string
+  ; message : Format.formatter -> unit
   ; is_error : bool
   ; sub_locs : (loc * string) list;
   }
@@ -1150,9 +1153,11 @@ let report w =
   | false -> `Inactive
   | true ->
      if is_error w then incr nerrors;
+     let m = message w in
+     let m = Format.dprintf "%s" m in  (* TEMP change in message itself *)
      `Active
        { id = id_name w;
-         message = message w;
+         message = m;
          is_error = is_error w;
          sub_locs = [];
        }
@@ -1163,7 +1168,8 @@ let report_alert (alert : alert) =
   | true ->
       let is_error = alert_is_error alert in
       if is_error then incr nerrors;
-      let message = Misc.normalise_eol alert.message in
+      (* let message = Misc.normalise_eol alert.message in TODO *)
+      let message = alert.message in
        (* Reduce \r\n to \n:
            - Prevents any \r characters being printed on Unix when processing
              Windows sources

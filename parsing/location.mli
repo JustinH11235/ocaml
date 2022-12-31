@@ -90,6 +90,7 @@ val input_phrase_buffer: Buffer.t option ref
 val echo_eof: unit -> unit
 val reset: unit -> unit
 
+val setup_colors: unit -> unit
 
 (** {1 Printing locations} *)
 

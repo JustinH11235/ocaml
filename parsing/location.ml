@@ -844,7 +844,7 @@ let default_warning_alert_reporter report mk (loc: t) w : report option =
   | `Active { Warnings.id; message; is_error; sub_locs } ->
       let msg_of_str str = fun ppf -> Format.pp_print_string ppf str in
       let kind = mk is_error id in
-      let main = { loc; txt = msg_of_str message } in
+      let main = { loc; txt = message } in
       let sub = List.map (fun (loc, sub_message) ->
         { loc; txt = msg_of_str sub_message }
       ) sub_locs in
@@ -890,7 +890,7 @@ let print_alert loc ppf w =
 let prerr_alert loc w = print_alert loc !formatter_for_warnings w
 
 let alert ?(def = none) ?(use = none) ~kind loc message =
-  prerr_alert loc {Warnings.kind; message; def; use}
+  prerr_alert loc {Warnings.kind; message = Format.dprintf "%s" message; def; use}
 
 let deprecated ?def ?use loc message =
   alert ?def ?use ~kind:"deprecated" loc message
@@ -904,7 +904,7 @@ let auto_include_alert lib =
     ocamlbuild, or using -package %s for ocamlfind)." lib lib lib lib lib in
   let alert =
     {Warnings.kind="ocaml_deprecated_auto_include"; use=none; def=none;
-     message = Format.asprintf "@[@\n%a@]" Format.pp_print_text message}
+     message = Format.dprintf "@[@\n%a@]" Format.pp_print_text message}
   in
   prerr_alert none alert
 
@@ -917,7 +917,7 @@ let deprecated_script_alert program =
   in
   let alert =
     {Warnings.kind="ocaml_deprecated_cli"; use=none; def=none;
-     message = Format.asprintf "@[@\n%a@]" Format.pp_print_text message}
+     message = Format.dprintf "@[@\n%a@]" Format.pp_print_text message}
   in
   prerr_alert none alert
 

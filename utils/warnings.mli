@@ -113,7 +113,7 @@ type t =
   | Unused_tmc_attribute                    (* 71 *)
   | Tmc_breaks_tailcall                     (* 72 *)
 
-type alert = {kind:string; message:string; def:loc; use:loc}
+type alert = {kind:string; message:Format.formatter -> unit; def:loc; use:loc}
 
 val parse_options : bool -> string -> alert option
 
@@ -134,7 +134,7 @@ val defaults_warn_error : string
 
 type reporting_information =
   { id : string
-  ; message : string
+  ; message : Format.formatter -> unit
   ; is_error : bool
   ; sub_locs : (loc * string) list;
   }
