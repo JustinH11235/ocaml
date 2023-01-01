@@ -10,10 +10,11 @@ Line 3, characters 0-27:
 3 | [@@@warning "fragile-math"]
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Alert ocaml_deprecated_cli: Setting a warning with a sequence of lowercase or uppercase letters,
-like 'ath', is deprecated.
-Use the equivalent signed form: -f-r-a-g-i-l-e-m-a-t-h.
-Hint: Enabling or disabling a warning by its mnemonic name requires a + or - prefix.
-Hint: Did you make a spelling mistake when using a mnemonic name?
+                            like 'ath', is deprecated.
+                            Use the equivalent signed form:
+                            -f-r-a-g-i-l-e-m-a-t-h.
+                            Hint: Enabling or disabling a warning by its mnemonic name requires a + or - prefix.
+                            Hint: Did you make a spelling mistake when using a mnemonic name?
 |}]
 
 [@@@warning "ab-cdg+efh"]
@@ -22,9 +23,9 @@ Line 1, characters 0-25:
 1 | [@@@warning "ab-cdg+efh"]
     ^^^^^^^^^^^^^^^^^^^^^^^^^
 Alert ocaml_deprecated_cli: Setting a warning with a sequence of lowercase or uppercase letters,
-like 'fh', is deprecated.
-Use the equivalent signed form: -a-b-c-d-g+e-f-h.
-Hint: Enabling or disabling a warning by its mnemonic name requires a + or - prefix.
+                            like 'fh', is deprecated.
+                            Use the equivalent signed form: -a-b-c-d-g+e-f-h.
+                            Hint: Enabling or disabling a warning by its mnemonic name requires a + or - prefix.
 |}]
 
 
